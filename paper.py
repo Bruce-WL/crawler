@@ -3,7 +3,9 @@ import csv
 import sqlite3
 from collections import defaultdict
 from dataclasses import dataclass, fields
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta
+import pytz
+UTC = pytz.utc
 from pathlib import Path
 
 from rich.console import Console
@@ -11,7 +13,6 @@ from typing_extensions import Iterable
 
 from async_translator import async_translate
 from categories import parse_categories
-
 
 
 @dataclass
@@ -41,10 +42,11 @@ class Paper:
             abstract_translated=row["abstract_translated"],
             first_announced_date=datetime.strptime(row["first_announced_date"], "%Y-%m-%d"),
         )
+
     @property
     def papers_cool_url(self):
         return self.url.replace("https://arxiv.org/abs", "https://papers.cool/arxiv")
-    
+
     @property
     def pdf_url(self):
         return self.url.replace("https://arxiv.org/abs", "https://arxiv.org/pdf")
@@ -301,7 +303,7 @@ class PaperExporter:
                 f"[bold green]Output {current_filename}.md completed. {len(chosen_records)} papers chosen, {len(filtered_records)} papers filtered"
             )
 
-    def to_csv(self, output_dir="./output_llms", filename_format="%Y-%m-%d", header=True, csv_config={}):
+    def to_csv(self, output_dir="./output_llms", filename_format="%Y-%m-%d", csv_config={}):
         output_dir = Path(output_dir)
         output_dir.mkdir(exist_ok=True, parents=True)
 
@@ -335,8 +337,7 @@ class PaperExporter:
                 if "lineterminator" not in csv_config:
                     csv_config["lineterminator"] = "\n"
                 writer = csv.writer(file, **csv_config)
-                if header:
-                    writer.writerow(headers)
+                writer.writerow(headers)
 
                 papers = self.db.fetch_papers_on_date(current)
                 chosen_records, filtered_records = self.filter_papers(papers)
@@ -347,7 +348,6 @@ class PaperExporter:
                     f"[bold green]Output {current_filename}.csv completed. {len(chosen_records)} papers chosen, {len(filtered_records)} papers filtered"
                 )
 
-
 if __name__ == "__main__":
     from datetime import date, timedelta
 
@@ -355,4 +355,4 @@ if __name__ == "__main__":
 
     exporter = PaperExporter(today.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
     exporter.to_markdown()
-    exporter.to_csv(csv_config=dict(delimiter="\t", header=False))
+    exporter.to_csv(csv_config=dict(delimiter="\t"))

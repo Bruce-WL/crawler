@@ -1,4 +1,6 @@
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
+import pytz
+UTC = pytz.utc
 from functools import lru_cache
 
 HOLIDAY_2024 = [
