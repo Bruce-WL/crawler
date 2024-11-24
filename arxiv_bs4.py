@@ -31,7 +31,7 @@ while True:
     result = requests.get(url=url, headers=headers)
     # 判断爬取内容是否为空
     content_length = int(result.headers.get("Content-Length"))
-    if content_length != 13706:
+    if content_length > 20000:
         soup = BeautifulSoup(result.content, 'html.parser')
         arxiv_results = soup.find_all('li', class_='arxiv-result')
 
